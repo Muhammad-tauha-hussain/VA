@@ -1,24 +1,51 @@
 import React, { useState, useContext } from 'react';
 import { userDataContext } from '../context/UserContext';
-
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 export default function CustomizedPage2() {
-  const { currentUser, setAssistantName } = useContext(userDataContext); 
+  const { currentUser, setAssistantName, setCurrentUser, serverUrl } =
+    useContext(userDataContext);
+
   const [isCreating, setIsCreating] = useState(false);
   const [isCreated, setIsCreated] = useState(false);
+
+  // Pre-fill from DB if already set
   const [assistantName, setName] = useState(currentUser?.assistantName || '');
 
-  const handleCreate = () => {
-    if (assistantName.trim()) {
-      setIsCreating(true);
+  const Navigate = useNavigate();
+
+  const handleCreate = async () => {
+    if (!assistantName.trim()) return;
+
+    setIsCreating(true);
+
+    try {
+      // ⭐ SEND NEW NAME TO BACKEND (IMPORTANT FIX)
+      const response = await axios.post(
+        `${serverUrl}/api/user/update`,
+        { assistantName },
+        { withCredentials: true }
+      );
+
+      // ⭐ UPDATE CONTEXT WITH NEW NAME
+      if (response?.data?.user) {
+        setAssistantName(response.data.user.assistantName);
+        setCurrentUser(response.data.user); // <-- ensures home page loads correctly
+      }
+
+      // Show animation
+      setIsCreating(false);
+      setIsCreated(true);
+
       setTimeout(() => {
-        setIsCreating(false);
-        setIsCreated(true);
-        setAssistantName(assistantName); 
-        setTimeout(() => {
-          setIsCreated(false);
-        }, 2000);
+        setIsCreated(false);
+        Navigate('/'); // return home
       }, 1500);
+    } catch (err) {
+      console.log(err);
+      setIsCreating(false);
+      alert('Failed to save name.');
     }
   };
 
@@ -30,7 +57,7 @@ export default function CustomizedPage2() {
     <div
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
       style={{
-        background: 'linear-gradient(to bottom, #000428 0%, #004e92 100%)'
+        background: 'linear-gradient(to bottom, #000428 0%, #004e92 100%)',
       }}
     >
       <div className="relative z-10 w-full max-w-md px-6">

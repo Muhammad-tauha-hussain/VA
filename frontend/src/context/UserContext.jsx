@@ -11,8 +11,17 @@ const UserContext = ({ children }) => {
   const handleCurrentUser = async () => {
     try {
       const result = await axios.get(`${serverUrl}/api/user/current`, { withCredentials: true });
-      setCurrentUser(result.data); 
-      console.log(result.data);
+      setCurrentUser(result.data);
+      
+      if (result.data.user) {
+        if (result.data.user.assistantImage) {
+          setAssistantImage(result.data.user.assistantImage);
+        }
+        if (result.data.user.assistantName) {
+          setAssistantName(result.data.user.assistantName);
+        }
+        console.log(result.data);
+      }
     } catch (error) {
       console.log("Error fetching current user:", error);
     }
