@@ -37,7 +37,7 @@ app.get('/gemini', async (req, res) => {
       personalityType: "funny"
     });
 
-    res.json(data);
+    res.json(data.response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Something went wrong" });
