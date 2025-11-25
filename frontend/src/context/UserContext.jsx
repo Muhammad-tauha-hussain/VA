@@ -27,6 +27,16 @@ const UserContext = ({ children }) => {
     }
   };
 
+  const getGeminiResponse = async (userPrompt, assistantName, userName, personalityType) => {
+    try {
+      const result = await axios.post(`${serverUrl}/api/user/askToAssistant`, { command, personalityType }, { withCredentials: true });
+      return result.data;
+    } catch (error) {
+      console.log("Error fetching gemini response", error);
+      
+    }
+  }
+
   useEffect(() => {
     handleCurrentUser();
   }, []);
@@ -36,7 +46,8 @@ const UserContext = ({ children }) => {
     currentUser,
     setCurrentUser,
     assistantName, setAssistantName,
-    assistantImage, setAssistantImage
+    assistantImage, setAssistantImage,
+    getGeminiResponse
   };
 
   return (

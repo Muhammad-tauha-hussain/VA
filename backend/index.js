@@ -26,23 +26,7 @@ app.use("/api/user", userRouter)
 app.get('/', (req, res) => {
   res.send('Hello from Backend');
 });
-app.get('/gemini', async (req, res) => {
-  try {
-    const userPrompt = req.query.userPrompt || "Hello";
 
-    const data = await geminiResponse({
-      userPrompt,
-      assistantName: "Nova",
-      userName: "Khizar",
-      personalityType: "funny"
-    });
-
-    res.json(data.response);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Something went wrong" });
-  }
-});
 
 
 app.listen(PORT, () => {

@@ -79,7 +79,9 @@ User message: "${userPrompt}"
       }
     );
 
-    let text = response.data.candidates[0].content.parts[0].text;
+    let text = response?.data?.candidates?.[0]?.content?.parts?.[0]?.text;
+if(!text) throw new Error("No content returned from Gemini");
+
 
     // ============================
     //     CLEANUP & SANITIZATION
