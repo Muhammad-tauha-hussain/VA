@@ -27,7 +27,7 @@ const UserContext = ({ children }) => {
     }
   };
 
-  const getGeminiResponse = async (userPrompt, assistantName, userName, personalityType) => {
+  const getGeminiResponse = async (command, personalityType) => {
     try {
       const result = await axios.post(`${serverUrl}/api/user/askToAssistant`, { command, personalityType }, { withCredentials: true });
       return result.data;

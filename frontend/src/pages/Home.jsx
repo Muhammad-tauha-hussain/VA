@@ -6,11 +6,103 @@ import axios from 'axios';
 const Home = () => {
   const { currentUser, serverUrl } = useContext(userDataContext);
   const navigate = useNavigate();
+  const [isActivated, setIsActivated] = useState(false);
+  const [lastHeard, setLastHeard] = useState("");
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
+
     console.log(currentUser);
+
+  }, [currentUser])
+
+  useEffect(() => {
+    const SpeechRecognition =
+      window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      alert("Your browser does not support speech recognition");
+      return;
+    }
+
+    const recognition = new SpeechRecognition();
+
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = "en-US";
+
+    let isListening = false;
+
+    const assistantName = currentUser?.assistantName?.toLowerCase() || "assistant";
+    const personalityType = currentUser?.personalityType;
+
+    const startRecognition = () => {
+      if (!isListening) {
+        try {
+          recognition.start();
+          isListening = true;
+        } catch (err) { }
+      }
+    };
+
+    recognition.onresult = async (event) => {
+      const transcript =
+        event.results[event.results.length - 1][0].transcript.toLowerCase();
+
+      console.log("🗣 Heard:", transcript);
+      setLastHeard(transcript);
+
+      // 🟢 Step 1: Detect wake word
+      if (!isActivated && transcript.includes(assistantName)) {
+        console.log("🎉 Wake word detected:", assistantName);
+        setIsActivated(true);
+        return;
+      }
+
+      // 🟢 Step 2: If activated → treat next sentence as command
+      if (isActivated) {
+        console.log("🎤 Command:", transcript);
+        setIsActivated(false);
+
+        const response = await getGeminiResponse(transcript, personalityType);
+        console.log("🤖 Gemini says:", response);
+
+        // Optional: make the assistant speak it
+        if (response) {
+          const speech = new SpeechSynthesisUtterance(response.text || response);
+          window.speechSynthesis.speak(speech);
+        }
+      }
+    };
+
+    recognition.onerror = (event) => {
+      if (event.error === "no-speech") {
+        recognition.stop();
+        setTimeout(startRecognition, 400);
+      }
+    };
+
+    recognition.onend = () => {
+      isListening = false;
+      setTimeout(startRecognition, 300);
+    };
+
+    const enableMic = () => {
+      startRecognition();
+      window.removeEventListener("click", enableMic);
+    };
+
+    window.addEventListener("click", enableMic);
+
+    return () => {
+      recognition.stop();
+      window.removeEventListener("click", enableMic);
+    };
   }, [currentUser]);
+
+
+
 
   const handleLogOut = async () => {
     try {
@@ -28,7 +120,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-linear-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
+    <div className="min-h-screen bg-black bg-linear-gradient-to-br from-slate-950 via-blue-950 to-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
 
       {/* Subtle background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-blue-900/20 via-transparent to-transparent pointer-events-none"></div>
@@ -54,12 +146,12 @@ const Home = () => {
                 {getUserInitials(currentUser?.name)}
               </div>
             )}
-            
+
             {/* User name */}
             <span className="text-white font-medium hidden sm:block">
               {currentUser?.name || 'User'}
             </span>
-            
+
             {/* Dropdown arrow */}
             <svg
               className={`w-4 h-4 text-white transition-transform duration-300 ${dropdownOpen ? 'rotate-180' : ''}`}
