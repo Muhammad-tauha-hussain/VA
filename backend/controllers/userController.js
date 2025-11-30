@@ -1,4 +1,3 @@
-
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import User from "../models/userModel.js";
 import geminiResponse from "../gemini.js";
@@ -57,31 +56,32 @@ export const updateAssistant = async (req, res) => {
       message: "Assistant updated successfully",
       user: updatedUser,
     });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Update Assistant Error" });
   }
 };
 
-
-export const askToAssistant = async(req , res) => {
+export const askToAssistant = async (req, res) => {
   try {
-    const {command} = req.body
-    const user = await User.findById(req.userId)
-    if (!user) return res.status(404).json({ message: "User not found in ask to assistant controller" });
-    const userName = user.name
-    const assistantName = user.assistantName
+    const { prompt } = req.body;
+    const user = await User.findById(req.userId);
+    if (!user) return res.status(404).json({ message: "User not found" });
 
-    const result = await geminiResponse({userPrompt: command, assistantName, userName, personalityType: user.personalityType})
-    res.json(result)
+    const result = await geminiResponse({
+      prompt,
+      assistantName: user.assistantName,
+      userName: user.name,
+      // personalityType: user.personalityType
+    });
 
+    // Wrap result to ensure frontend gets 'text'
+    res.json({ text: result.text || result });
   } catch (error) {
-    console.log(error)
-    res.status(500).json({message: "askToAssistant Error" , error})
-    
-
+    console.log(error);
+    res.status(500).json({ message: "askToAssistant Error", error });
   }
-}
+};
+
 
 export default getCurrentUser;

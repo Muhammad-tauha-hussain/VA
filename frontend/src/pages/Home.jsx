@@ -8,7 +8,7 @@ const Home = () => {
   const navigate = useNavigate();
   const [isActivated, setIsActivated] = useState(false);
   const [lastHeard, setLastHeard] = useState("");
-
+  const personalityType = currentUser?.personalityType || "logical";
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   useEffect(() => {
@@ -65,15 +65,14 @@ const Home = () => {
         console.log("🎤 Command:", transcript);
         setIsActivated(false);
 
-        const response = await getGeminiResponse(transcript, personalityType);
+        const response = await getGeminiResponse(transcript);
+
         console.log("🤖 Gemini says:", response);
 
-        // Optional: make the assistant speak it
-        if (response) {
-          const speech = new SpeechSynthesisUtterance(response.text || response);
-          window.speechSynthesis.speak(speech);
-        }
+        const speech = new SpeechSynthesisUtterance(response.text);
+        window.speechSynthesis.speak(speech);
       }
+
     };
 
     recognition.onerror = (event) => {

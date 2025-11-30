@@ -3,35 +3,40 @@ import axios from "axios";
 /**
  * Predefined personalities
  */
-const personalities = {
-  funny: "You are funny, witty, and playful. Always reply in a humorous way.",
-  robotic: "You respond like a robot: short, precise, and technical.",
-  emotional: "You respond empathetically, warmly, and supportively.",
-  logical: "You respond logically, giving structured explanations.",
-  formal: "You respond politely and professionally."
-};
+// const personalities = {
+//   funny: "You are funny, witty, and playful. Always reply in a humorous way.",
+//   robotic: "You respond like a robot: short, precise, and technical.",
+//   emotional: "You respond empathetically, warmly, and supportively.",
+//   logical: "You respond logically, giving structured explanations.",
+//   formal: "You respond politely and professionally."
+// };
 
 /**
  * Gemini Virtual Assistant Function
  */
-const geminiResponse = async ({ userPrompt, assistantName, userName, personalityType }) => {
+const geminiResponse = async ({ 
+  prompt, 
+  assistantName, 
+  userName, 
+  // personalityType
+ }) => {
   try {
     const apiUrl = process.env.GEMINI_API;
     const apiKey = process.env.GEMINI_API_KEY;
 
     // Get personality text
-    const personality =
-      personalities[personalityType] ||
-      "You are friendly, helpful, and conversational.";
+    // const personality =
+    //   personalities[personalityType] ||
+    //   "You are friendly, helpful, and conversational.";
 
     // ============================
     //      BUILD MASTER PROMPT
     // ============================
-    const prompt = `
+    const Geminiprompt = `
 You are a virtual assistant named ${assistantName}, created by ${userName}.
 You are NOT Google. You behave like a voice-enabled personal assistant.
 
-Your personality is: ${personality}.
+You are friendly, helpful, and conversational.
 Always speak in a natural, friendly, voice-friendly way.
 
 Your ONLY job:
@@ -51,7 +56,7 @@ Rules:
 - If someone asks “tumhe kisne banaya?”, answer: "${userName}".
 - Be consistent with the assigned personality.
 
-User message: "${userPrompt}"
+User message: "${prompt}"
 `;
 
     // ============================
@@ -65,7 +70,7 @@ User message: "${userPrompt}"
             role: "user",
             parts: [
               {
-                text: prompt
+                text: Geminiprompt
               }
             ]
           }

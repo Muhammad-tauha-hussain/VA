@@ -12,7 +12,7 @@ const UserContext = ({ children }) => {
     try {
       const result = await axios.get(`${serverUrl}/api/user/current`, { withCredentials: true });
       setCurrentUser(result.data);
-      
+
       if (result.data.user) {
         if (result.data.user.assistantImage) {
           setAssistantImage(result.data.user.assistantImage);
@@ -27,15 +27,23 @@ const UserContext = ({ children }) => {
     }
   };
 
-  const getGeminiResponse = async (command, personalityType) => {
-    try {
-      const result = await axios.post(`${serverUrl}/api/user/askToAssistant`, { command, personalityType }, { withCredentials: true });
-      return result.data;
-    } catch (error) {
-      console.log("Error fetching gemini response", error);
-      
-    }
+  const getGeminiResponse = async (command) => {
+  try {
+    const response = await axios.post(
+      `${serverUrl}/api/user/askToAssistant`,
+      { command },
+      { withCredentials: true }
+    );
+
+    return response.data;
+  } catch (error) {
+    console.error("❌ Gemini Request Error:", error.response?.data || error);
+    return null;
   }
+};
+
+
+
 
   useEffect(() => {
     handleCurrentUser();
