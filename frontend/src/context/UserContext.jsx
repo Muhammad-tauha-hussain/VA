@@ -27,20 +27,19 @@ const UserContext = ({ children }) => {
     }
   };
 
-  const getGeminiResponse = async (command) => {
+ const getGeminiResponse = async (prompt, serverUrl) => {
   try {
     const response = await axios.post(
-      `${serverUrl}/api/user/askToAssistant`,
-      { command },
+      `${serverUrl}/api/user/ask`,
+      { prompt }, // ⚠️ must match backend expected key
       { withCredentials: true }
     );
-
-    return response.data;
+    return response; // returns { gemini, action }
   } catch (error) {
     console.error("❌ Gemini Request Error:", error.response?.data || error);
     return null;
   }
-};
+};;
 
 
 

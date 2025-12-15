@@ -1,6 +1,7 @@
 import { uploadOnCloudinary } from "../config/cloudinary.js";
 import User from "../models/userModel.js";
 import geminiResponse from "../gemini.js";
+import { handleAction } from "./actionHandler.js";
 const getCurrentUser = async (req, res) => {
   try {
     const userId = req.userId;
@@ -65,23 +66,32 @@ export const updateAssistant = async (req, res) => {
 export const askToAssistant = async (req, res) => {
   try {
     const { prompt } = req.body;
+
     const user = await User.findById(req.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    const result = await geminiResponse({
+    // 1️⃣ Get structured intent from Gemini
+    const geminiResult = await geminiResponse({
       prompt,
       assistantName: user.assistantName,
-      userName: user.name,
-      // personalityType: user.personalityType
+      userName: user.name
     });
 
-    // Wrap result to ensure frontend gets 'text'
-    res.json({ text: result.text || result });
+    // 2️⃣ Process the action type
+    const actionOutput = await handleAction(geminiResult);
+
+    // 3️⃣ Send both (for frontend UI + actions)
+    res.json({
+      gemini: geminiResult,   // raw model output
+      action: actionOutput    // action trigger details
+    });
+
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "askToAssistant Error", error });
   }
 };
+
 
 
 export default getCurrentUser;
